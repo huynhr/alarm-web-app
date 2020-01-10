@@ -25,9 +25,7 @@ class App extends React.Component {
     return (
       <div>
         <button onClick={this.updateUsersList}>request users</button>
-        <ul>
-          <UsersList users={this.state.users}/>
-        </ul>
+        <UsersList users={this.state.users}/>
       </div>
     );
   }
