@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GoogleLogin } from 'react-google-login';
+import { GoogleLogin, GoogleLogout } from 'react-google-login';
 import config from '../config/config.json';
 import './App.css';
 import UsersList from './usersList/UsersList';
@@ -12,13 +12,11 @@ function App() {
   async function fetchUsersList() {
     await axios.get('http://localhost:3000/api/v1/users')
       .then(response => {
-        console.log('Api response: ', response);
         getUsers(response.data)
       });
   }
 
   const googleResponse = (response) => {
-    console.log(response)
     const payload = {
       accessToken: response.accessToken,
       userProfile: response.profileObj
@@ -39,7 +37,11 @@ function App() {
 
   let content = !!isAuthenticated ? (
     <React.Fragment>
-      <button onClick={() => getAuth(false)}>Logout</button>
+      <GoogleLogout
+        clientId={config.GOOGLE_CLIENT_ID}
+        buttonText="Logout"
+        onLogoutSuccess={() => getAuth(false)}
+      />
       <button onClick={fetchUsersList}>request users</button>
       <UsersList users={users} />
     </React.Fragment>
