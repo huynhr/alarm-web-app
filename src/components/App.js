@@ -1,34 +1,64 @@
-import React from 'react';
-import logo from '../logo.svg';
+import React, { useState } from 'react';
+import { GoogleLogin } from 'react-google-login';
+import config from '../config/config.json';
 import './App.css';
 import UsersList from './usersList/UsersList';
 import axios from 'axios';
 
-class App extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      'users': []
-    }
-    this.updateUsersList = this.updateUsersList.bind(this);
-  }
+function App() {
+  const [users, getUsers] = useState([])
+  const [isAuthenticated, getAuth] = useState(false)
 
-  updateUsersList() {
-    axios.get('http://localhost:3000/users')
+  async function fetchUsersList() {
+    await axios.get('http://localhost:3000/api/v1/users')
       .then(response => {
-        console.log(response);
-        this.setState({'users': response.data});
-      })
+        console.log('Api response: ', response);
+        getUsers(response.data)
+      });
   }
 
-  render() {
-    return (
-      <div>
-        <button onClick={this.updateUsersList}>request users</button>
-        <UsersList users={this.state.users}/>
-      </div>
-    );
+  const googleResponse = (response) => {
+    console.log(response)
+    const payload = {
+      accessToken: response.accessToken,
+      userProfile: response.profileObj
+    };
+    axios.post('http://localhost:3000/api/v1/auth', payload)
+      .then(response => {
+        if (response.data.token) {
+          getAuth(true)
+        } else {
+          getAuth(false)
+          onFailure()
+        }
+      })
+      .catch(response => console.log(response))
   }
-}
+
+  const onFailure = () => alert('Login Failed.')
+
+  let content = !!isAuthenticated ? (
+    <React.Fragment>
+      <button onClick={() => getAuth(false)}>Logout</button>
+      <button onClick={fetchUsersList}>request users</button>
+      <UsersList users={users} />
+    </React.Fragment>
+  ) : (
+    <React.Fragment>
+      <GoogleLogin
+        clientId={config.GOOGLE_CLIENT_ID}
+        buttonText="Login"
+        onSuccess={googleResponse}
+        onFailure={onFailure}
+      />
+    </React.Fragment>
+  );
+  console.log('current state : ', users)
+  return (
+    <div>
+      {content}
+    </div>
+  );
+} 
 
 export default App;
