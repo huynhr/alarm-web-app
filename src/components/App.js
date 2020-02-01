@@ -11,10 +11,15 @@ function App() {
   const [jtwToken, updateJtwToken] = useState('')
 
   async function fetchUsersList() {
-    await axios.get('http://localhost:3000/api/v1/users')
+    await axios.get('http://localhost:3000/api/v1/users', {headers: {'token': jtwToken} })
       .then(response => {
         getUsers(response.data)
-      });
+      })
+      .catch(response => {
+        console.log('Error response: ', response);
+        getAuth(false)
+        updateJtwToken('')
+      })
   }
 
   const googleResponse = (response) => {
@@ -24,7 +29,6 @@ function App() {
     };
     axios.post('http://localhost:3000/api/v1/auth', payload)
       .then(response => {
-        console.log('RESPONSE: ', response)
         if (response.headers["x-auth-token"]) {
           getAuth(true);
           updateJtwToken(response.headers["x-auth-token"]);
