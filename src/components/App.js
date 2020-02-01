@@ -8,6 +8,7 @@ import axios from 'axios';
 function App() {
   const [users, getUsers] = useState([])
   const [isAuthenticated, getAuth] = useState(false)
+  const [jtwToken, updateJtwToken] = useState('')
 
   async function fetchUsersList() {
     await axios.get('http://localhost:3000/api/v1/users')
@@ -18,16 +19,18 @@ function App() {
 
   const googleResponse = (response) => {
     const payload = {
-      accessToken: response.accessToken,
+      access_token: response.accessToken,
       userProfile: response.profileObj
     };
     axios.post('http://localhost:3000/api/v1/auth', payload)
       .then(response => {
-        if (response.data.token) {
-          getAuth(true)
+        console.log('RESPONSE: ', response)
+        if (response.headers["x-auth-token"]) {
+          getAuth(true);
+          updateJtwToken(response.headers["x-auth-token"]);
         } else {
-          getAuth(false)
-          onFailure()
+          getAuth(false);
+          onFailure();
         }
       })
       .catch(response => console.log(response))
@@ -44,6 +47,7 @@ function App() {
       />
       <button onClick={fetchUsersList}>request users</button>
       <UsersList users={users} />
+      <p>{jtwToken}</p>
     </React.Fragment>
   ) : (
     <React.Fragment>
