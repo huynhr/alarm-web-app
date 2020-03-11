@@ -21,7 +21,6 @@ const StateProvider = ( {children} ) => {
     }
   }, initialState);
 
-  console.log('Children: ', children);
   return <Provider value={{state, dispatch}}>{children}</Provider>
 };
 

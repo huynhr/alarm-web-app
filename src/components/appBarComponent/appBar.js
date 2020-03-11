@@ -14,24 +14,23 @@ function AppBarComponent() {
 
   console.log('state: ', state);
 
-  const googleResponse = response => {
+  const googleResponse = async(response) => {
     const payload = {
       access_token: response.accessToken,
       userProfile: response.profileObj
     };
-    axios
-      .post("http://localhost:3000/api/v1/auth", payload)
-      .then(response => {
-        if (response.headers["x-auth-token"]) {
-          console.log("response: ", response);
-          dispatch({type: actionTypes.AUTHENTICATED_UPDATE, payload: true});
-          dispatch({type: actionTypes.JWT_UPDATE, payload: response.headers["x-auth-token"]});
-        } else {
-          dispatch({type: actionTypes.AUTHENTICATED_UPDATE, payload: false});
-          onFailure();
-        }
-      })
-      .catch(response => console.log(response));
+    const api_response = await axios.post("http://localhost:3000/api/v1/auth", payload);
+    if (api_response.headers["x-auth-token"]) {
+      console.log("response: ", api_response);
+      dispatch({ type: actionTypes.AUTHENTICATED_UPDATE, payload: true });
+      dispatch({
+        type: actionTypes.JWT_UPDATE,
+        payload: api_response.headers["x-auth-token"]
+      });
+    } else {
+      dispatch({ type: actionTypes.AUTHENTICATED_UPDATE, payload: false });
+      onFailure();
+    }
   };
 
   const onFailure = () => alert("Login Failed.");
